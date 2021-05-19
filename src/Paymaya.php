@@ -30,11 +30,18 @@ class Paymaya
     protected $checkoutSecretKey;
 
     /**
-     * Paymaya Checkout API Token
+     * Paymaya Checkout Public API Token
      *
      * @var string
      */
-    protected $checkoutApiToken;
+    protected $checkoutPublicApiToken;
+
+    /**
+     * Paymaya Checkout Secret API Token
+     *
+     * @var string
+     */
+    protected $checkoutSecretApiToken;
 
     /**
      * Paymaya Environment
@@ -58,7 +65,7 @@ class Paymaya
     public function __construct()
     {
 
-        $this->checkoutSecretKey = config('paymaya.checkout.key.secret');
+        $this->setCheckoutSecretKey(config('paymaya.checkout.key.secret'));
         $this->setCheckoutPublicKey(config('paymaya.checkout.key.public'));
         $this->environment = config('paymaya.environment', 'SANDBOX');
     }
@@ -68,9 +75,9 @@ class Paymaya
      *
      * @return string
      */
-    public function getCheckoutApiToken(): string
+    public function getCheckoutPublicApiToken(): string
     {
-        return $this->checkoutApiToken;
+        return $this->checkoutPublicApiToken;
     }
 
     /**
@@ -89,7 +96,15 @@ class Paymaya
     public function setCheckoutPublicKey(string $checkoutPublicKey): void
     {
         $this->checkoutPublicKey = $checkoutPublicKey;
-        $this->checkoutApiToken = base64_encode($this->checkoutPublicKey . ':');
+        $this->checkoutPublicApiToken = base64_encode($this->checkoutPublicKey . ':');
+    }
+
+    /**
+     * @return string
+     */
+    public function getCheckoutSecretApiToken(): string
+    {
+        return $this->checkoutSecretApiToken;
     }
 
     /**
@@ -100,6 +115,15 @@ class Paymaya
     public function getCheckoutSecretKey(): string
     {
         return $this->checkoutSecretKey;
+    }
+
+    /**
+     * @param string $checkoutSecretKey
+     */
+    public function setCheckoutSecretKey(string $checkoutSecretKey): void
+    {
+        $this->checkoutSecretKey = $checkoutSecretKey;
+        $this->checkoutSecretApiToken = base64_encode($checkoutSecretKey . ':');
     }
 
     /**
@@ -129,9 +153,10 @@ class Paymaya
      * @param bool $is_post_method
      * @param string $append_url
      * @param array $data
+     * @param bool $use_secret_api_token
      * @return PromiseInterface|Response
      */
-    public function makeCheckoutRequest(bool $is_post_method = FALSE, string $append_url = '', array $data = [])
+    public function makeCheckoutRequest(bool $is_post_method = FALSE, string $append_url = '', array $data = [], bool $use_secret_api_token = FALSE)
     {
         // Prepare URL
 
@@ -145,7 +170,9 @@ class Paymaya
 
         $data = array_filter_recursive($data);
 
-        $response = Http::withHeaders(['Authorization' => 'Basic ' . $this->getCheckoutApiToken()])->bodyFormat('json');
+        $token = $use_secret_api_token ? $this->getCheckoutSecretApiToken() : $this->getCheckoutPublicApiToken();
+
+        $response = Http::withHeaders(['Authorization' => 'Basic ' . $token])->bodyFormat('json');
         if ($is_post_method) {
             $response = $response->post($url, $data);
         }

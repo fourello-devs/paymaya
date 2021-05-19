@@ -212,7 +212,7 @@ class Checkout extends BaseModel
     public function retrieve(): Checkout
     {
         $append = 'checkout/v1/checkouts/' . $this->id;
-        $response = paymaya()->makeCheckoutRequest(FALSE, $append);
+        $response = paymaya()->makeCheckoutRequest(FALSE, $append, [], TRUE);
         if ($response->ok()) {
             $this->parse($response);
         }

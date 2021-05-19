@@ -82,7 +82,7 @@ class APIExamples
     public function getCheckOutDetails(): Checkout
     {
         $itemCheckout = new Checkout;
-        $itemCheckout->id = 'aac2741a-fcca-4fc1-8f2d-502f9b6a552a';
+        $itemCheckout->id = '6bba889e-9abc-4310-83dc-bdbe95d3dce6';
         return $itemCheckout->retrieve();
     }
 }
