@@ -12,7 +12,6 @@ namespace FourelloDevs\Paymaya\Models;
  */
 class Buyer extends BaseModel
 {
-
     /**
      * @example "John"
      *
@@ -74,10 +73,14 @@ class Buyer extends BaseModel
     public $shippingAddress;
 
     /**
-     * @param ShippingAddress|array $shippingAddress
+     * @param BillingAddress|ShippingAddress|array|null $shippingAddress
+     * @throws \JsonException
      */
     public function setShippingAddress($shippingAddress): void
     {
+        if ($shippingAddress instanceof BillingAddress) {
+            $shippingAddress = json_decode(json_encode($shippingAddress, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
+        }
         $this->shippingAddress = is_array($shippingAddress) ? new ShippingAddress($shippingAddress) : $shippingAddress;
     }
 
@@ -87,10 +90,14 @@ class Buyer extends BaseModel
     public $billingAddress;
 
     /**
-     * @param BillingAddress|array $billingAddress
+     * @param BillingAddress|ShippingAddress|array|null $billingAddress
+     * @throws \JsonException
      */
     public function setBillingAddress($billingAddress): void
     {
+        if ($billingAddress instanceof ShippingAddress) {
+            $billingAddress = json_decode(json_encode($billingAddress, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
+        }
         $this->billingAddress = is_array($billingAddress) ? new BillingAddress($billingAddress) : $billingAddress;
     }
 
@@ -100,14 +107,4 @@ class Buyer extends BaseModel
      * @var
      */
     public $ipAddress;
-
-    /**
-     * Actions to perform prior to serialization.
-     *
-     * @return void
-     */
-    public function performBeforeSerialize(): void
-    {
-        // TODO: Implement performBeforeSerialize() method.
-    }
 }

@@ -6,6 +6,10 @@ return [
             'public' => env('PAYMAYA_CHECKOUT_PUBLIC_KEY'),
             'secret' => env('PAYMAYA_CHECKOUT_SECRET_KEY'),
         ],
+        'output_url' => [
+            'production' => env('PAYMAYA_PRODUCTION_CHECKOUT_URL'),
+            'sandbox' => env('PAYMAYA_SANDBOX_CHECKOUT_URL'),
+        ]
     ],
     'payments' => [
         'key' => [

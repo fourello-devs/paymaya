@@ -61,14 +61,4 @@ class ShippingAddress extends BillingAddress
         $this->phone = $buyer->contact->phone;
         $this->email = $buyer->contact->email;
     }
-
-    /**
-     * Actions to perform prior to serialization.
-     *
-     * @return void
-     */
-    public function performBeforeSerialize(): void
-    {
-        // TODO: Implement performBeforeSerialize() method.
-    }
 }

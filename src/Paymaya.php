@@ -60,6 +60,16 @@ class Paymaya
     public const SANDBOX_URL = 'https://pg-sandbox.paymaya.com';
 
     /**
+     * Paymaya Checkout Production URL Pattern
+     */
+    public const CHECKOUT_PRODUCTION_OUTPUT_URL = 'https://payments-web-sandbox.paymaya.com/v2/checkout?id=';
+
+    /**
+     * Paymaya Checkout Sandbox URL Pattern
+     */
+    public const CHECKOUT_SANDBOX_OUTPUT_URL = 'https://payments-web-sandbox.paymaya.com/v2/checkout?id=';
+
+    /**
      * Paymaya constructor.
      */
     public function __construct()
@@ -142,11 +152,25 @@ class Paymaya
      */
     public function getBaseUrl(): string
     {
-        if (strtoupper($this->environment) === 'PRODUCTION') {
+        if (strtoupper(trim($this->environment)) === 'PRODUCTION') {
             return self::PRODUCTION_URL;
         }
 
         return self::SANDBOX_URL;
+    }
+
+    /**
+     * Get Checkout URL Pattern
+     *
+     * @return string
+     */
+    public function getCheckoutOutputURL(): string
+    {
+        if (strtoupper(trim($this->environment)) === 'PRODUCTION') {
+            return self::CHECKOUT_PRODUCTION_OUTPUT_URL;
+        }
+
+        return self::CHECKOUT_SANDBOX_OUTPUT_URL;
     }
 
     /**
@@ -156,7 +180,7 @@ class Paymaya
      * @param bool $use_secret_api_token
      * @return PromiseInterface|Response
      */
-    public function makeCheckoutRequest(bool $is_post_method = FALSE, string $append_url = '', array $data = [], bool $use_secret_api_token = FALSE)
+    public function makeRequest(bool $is_post_method = FALSE, string $append_url = '', array $data = [], bool $use_secret_api_token = FALSE)
     {
         // Prepare URL
 

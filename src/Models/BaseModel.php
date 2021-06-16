@@ -44,6 +44,7 @@ abstract class BaseModel implements \JsonSerializable
             $array = $response->json($key);
             $array && $this->setFields($array);
         }
+
         return $this;
     }
 
@@ -67,9 +68,12 @@ abstract class BaseModel implements \JsonSerializable
     /**
      * Actions to perform prior to serialization.
      *
-     * @return void
+     * @return array|null
      */
-    abstract public function performBeforeSerialize(): void;
+    public function performBeforeSerialize(): ?array
+    {
+        return NULL;
+    }
 
     /**
      * Specify data which should be serialized to JSON
@@ -80,9 +84,11 @@ abstract class BaseModel implements \JsonSerializable
      */
     public function jsonSerialize(): BaseModel
     {
-        $this->performBeforeSerialize();
+        $data = $this->performBeforeSerialize();
 
-        foreach (get_object_vars($this) as $key=>$value) {
+        $data = is_null($data) ? get_object_vars($this) : $data;
+
+        foreach ($data as $key=>$value) {
             if (empty($value)) {
                 unset($this->$key);
             }

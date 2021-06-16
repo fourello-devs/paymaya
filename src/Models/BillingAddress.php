@@ -53,14 +53,4 @@ class BillingAddress extends BaseModel
      * @var string
      */
     public $countryCode;
-
-    /**
-     * Actions to perform prior to serialization.
-     *
-     * @return void
-     */
-    public function performBeforeSerialize(): void
-    {
-        // TODO: Implement performBeforeSerialize() method.
-    }
 }

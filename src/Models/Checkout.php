@@ -3,10 +3,8 @@
 
 namespace FourelloDevs\Paymaya\Models;
 
-use FourelloDevs\MrSpeedy\Models\BaseModel;
-use Illuminate\Http\Client\Response;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
+use Exception;
+use Illuminate\Support\Collection;
 
 /**
  * Class Checkout
@@ -58,7 +56,7 @@ class Checkout extends BaseModel
     }
 
     /**
-     * @var Item[]
+     * @var Collection|null
      */
     public $items;
 
@@ -69,11 +67,12 @@ class Checkout extends BaseModel
     {
         if (empty($items) === FALSE) {
             if ($items[0] instanceof Item) {
-                $this->items = $items;
+                $this->items = collect($items);
             }
             else {
+                $this->items = collect();
                 foreach ($items as $item) {
-                    $this->items[] = new Item($item);
+                    $this->items->add(new Item($item));
                 }
             }
         }
@@ -160,9 +159,17 @@ class Checkout extends BaseModel
     /**
      * Payment Details
      *
-     * @var array|null
+     * @var Collection|null
      */
     public $paymentDetails;
+
+    /**
+     * @return void
+     */
+    public function setPaymentDetails(): void
+    {
+        $this->paymentDetails = collect(Payment::findByRRN($this->requestReferenceNumber));
+    }
 
     /**
      * Merchant Information
@@ -180,43 +187,109 @@ class Checkout extends BaseModel
     }
 
     /**
-     * Actions to perform prior to serialization.
-     *
-     * @return void
-     */
-    public function performBeforeSerialize(): void
-    {
-        // TODO: Implement performBeforeSerialize() method.
-    }
-
-    /**
      * Execute the Checkout
      *
+     * @return $this|array|mixed
      * @throws \JsonException
      */
-    public function execute(): Checkout
+    public function execute()
     {
         $data = json_decode(json_encode($this, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
-        $response = paymaya()->makeCheckoutRequest(TRUE, 'checkout/v1/checkouts', $data);
+        $response = paymaya()->makeRequest(TRUE, 'checkout/v1/checkouts', $data);
         if ($response->ok()) {
             $this->id = $response->json('checkoutId');
             $this->url = $response->json('redirectUrl');
+            return $this;
         }
 
-        return $this;
+        return $response->json();
     }
 
     /**
      * Retrieve Checkout Details
+     *
+     * @return $this|array|mixed
      */
-    public function retrieve(): Checkout
+    public function retrieve()
     {
         $append = 'checkout/v1/checkouts/' . $this->id;
-        $response = paymaya()->makeCheckoutRequest(FALSE, $append, [], TRUE);
+        $response = paymaya()->makeRequest(FALSE, $append, [], TRUE);
         if ($response->ok()) {
             $this->parse($response);
+            if (is_null($this->url)) {
+                $this->url = paymaya()->getCheckoutOutputURL() . $this->id;
+            }
+            return $this;
         }
 
-        return $this;
+        return $response->json();
+    }
+
+    /**
+     * @param string $reason
+     * @return array|PaymentVoid|mixed
+     */
+    public function void(string $reason)
+    {
+        $data = get_defined_vars();
+
+        $append = 'payments/v1/payments/' . $this->id . '/voids';
+
+        $response = paymaya()->makeRequest(TRUE, $append, $data, TRUE);
+
+        if ($response->ok()) {
+            return new PaymentVoid($response);
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * @param string $reason
+     * @param Amount $totalAmount
+     * @return array|PaymentRefund|mixed
+     * @throws \JsonException
+     */
+    public function refund(string $reason, Amount $totalAmount)
+    {
+        $totalAmount = json_decode(json_encode($totalAmount, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
+
+        $requestReferenceNumber = $this->requestReferenceNumber;
+
+        $data = get_defined_vars();
+
+        $append = 'payments/v1/payments/' . $this->id . '/refunds';
+
+        $response = paymaya()->makeRequest(TRUE, $append, $data, TRUE);
+
+        if ($response->ok()) {
+            return new PaymentRefund($response);
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Find Checkout Details
+     *
+     * @param string $id
+     * @return array|mixed|static
+     */
+    public static function find(string $id)
+    {
+        $append = 'checkout/v1/checkouts/' . $id;
+        $response = paymaya()->makeRequest(FALSE, $append, [], TRUE);
+
+        $checkout = new static();
+
+        if ($response->ok()) {
+            $checkout->parse($response);
+            if (is_null($checkout->url)) {
+                $checkout->url = paymaya()->getCheckoutOutputURL() . $checkout->id;
+            }
+            return $checkout;
+        }
+
+        return $response->json();
     }
 }

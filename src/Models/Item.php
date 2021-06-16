@@ -66,14 +66,4 @@ class Item extends BaseModel
     {
         $this->totalAmount = is_array($totalAmount) ? new Amount($totalAmount) : $totalAmount;
     }
-
-    public function updateTotalAmount(): void
-    {
-        $this->totalAmount = $this->amount;
-    }
-
-    public function performBeforeSerialize(): void
-    {
-        $this->updateTotalAmount();
-    }
 }

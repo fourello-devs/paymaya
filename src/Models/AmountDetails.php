@@ -54,14 +54,4 @@ class AmountDetails extends BaseModel
      * @var string|null
      */
     public $subtotal;
-
-    /**
-     * Actions to perform prior to serialization.
-     *
-     * @return void
-     */
-    public function performBeforeSerialize(): void
-    {
-        // TODO: Implement performBeforeSerialize() method.
-    }
 }

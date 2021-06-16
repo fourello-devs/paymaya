@@ -109,14 +109,4 @@ class Merchant extends BaseModel
      * @var
      */
     public $name;
-
-    /**
-     * Actions to perform prior to serialization.
-     *
-     * @return void
-     */
-    public function performBeforeSerialize(): void
-    {
-        // TODO: Implement performBeforeSerialize() method.
-    }
 }

@@ -16,17 +16,26 @@ class Amount extends BaseModel
      * Currency
      * @example "PHP"
      *
-     * @var
+     * @var string
      */
-    public $currency;
+    public $currency = "PHP";
 
     /**
      * Value
      * @example "1100.00"
      *
-     * @var
+     * @var string
      */
     public $value;
+
+
+    /**
+     * Amount
+     * @example "1100.00
+     *
+     * @var string
+     */
+    public $amount;
 
     /**
      * Amount Details
@@ -41,15 +50,5 @@ class Amount extends BaseModel
     public function setDetails($details): void
     {
         $this->details = is_array($details) ? new AmountDetails($details) : $details;
-    }
-
-    /**
-     * Actions to perform prior to serialization.
-     *
-     * @return void
-     */
-    public function performBeforeSerialize(): void
-    {
-        // TODO: Implement performBeforeSerialize() method.
     }
 }
